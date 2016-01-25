@@ -17,11 +17,12 @@ import com.google.gson.Gson;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
+
 import javax.ws.rs.core.MultivaluedMap;
 
 
@@ -99,7 +100,8 @@ public class ItemApiLib {
     log.debug("Sending /items/show request, epcPrefix=" + epcPrefix + ", zoneNames=" + zoneNames
         + ", confidence=" + confidence + ", epcFormat=" + epcFormat + ", pageMarker=" + pageMarker
         + ", maximumPageSize=" + maximumPageSize);
-    MultivaluedMap<String, String> map = new MultivaluedHashMap<String, String>();
+
+    MultivaluedMap<String, String> map = new MultivaluedMapImpl();
     if( epcPrefix != null ){
       map.put("epcPrefix", Arrays.asList(epcPrefix));
     }
@@ -150,7 +152,7 @@ public class ItemApiLib {
         "Sending /items/show/history request, epcPrefix=%s, fromZone=%s, "
             + "toZone=%s, fromTime=%s, toTime=%s, pageMarker=%s, maximumPageSize=%s",
         epcPrefix, fromZone, toZone, fromTime, toTime, pageMarker, maximumPageSize));
-    MultivaluedMap<String, String> map = new MultivaluedHashMap<String, String>();
+    MultivaluedMap<String, String> map = new MultivaluedMapImpl();
     if( epcPrefix != null ){
       map.put("epcPrefix", Arrays.asList(epcPrefix));
     }

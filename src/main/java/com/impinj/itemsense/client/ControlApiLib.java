@@ -28,9 +28,9 @@ import com.google.gson.reflect.TypeToken;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
+
 import lombok.extern.log4j.Log4j;
 
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -77,7 +77,7 @@ public class ControlApiLib {
   public void stopJobById(final String jobId) throws Exception {
     log.debug("Attempting to destroy this job :" + jobId);
     final String response = target.path("control/jobs/stop/" + jobId)
-        .entity(MediaType.APPLICATION_JSON_TYPE).post( String.class);
+          .post( String.class);
     log.debug("/control/jobs/stop response: " + response);
   }
 
@@ -127,7 +127,7 @@ public class ControlApiLib {
     final String createReaderDefJsonString = gson.toJson(readerDefData);
     log.debug("JSON being used to create reader definition: " + createReaderDefJsonString);
     final String returnValue = target.path("configuration/readerDefinitions/createOrReplace")
-        .entity(Entity.entity(createReaderDefJsonString, MediaType.APPLICATION_JSON_TYPE))
+       .accept(MediaType.APPLICATION_JSON_TYPE)
         .put( String.class);
     log.debug("ReaderDefinitions.create() return: " + returnValue);
   }
@@ -142,7 +142,8 @@ public class ControlApiLib {
     log.debug("About to destroy reader definition: " + readerId);
 
     final String response = target.path("control/readerDefinitions/destroy/" + readerId)
-            .entity(MediaType.APPLICATION_JSON_TYPE).post(String.class);
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .post(String.class);
 
     log.debug("Destroy reader definition response: " + response);
 
@@ -190,9 +191,9 @@ public class ControlApiLib {
     log.debug("JSON being used to create reader configuration: " + createConfigurationJsonString);
 
     final String returnValue = target.path("configuration/readerConfigurations/createOrReplace")
+        .type(MediaType.APPLICATION_JSON_TYPE)
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .entity(Entity.entity(createConfigurationJsonString, MediaType.APPLICATION_JSON_TYPE))
-        .put(String.class);
+        .put(String.class, createConfigurationJsonString);
     log.debug("readerConfigurations().create() return: " + returnValue);
     return returnValue;
   }
@@ -247,8 +248,7 @@ public class ControlApiLib {
 
     final String returnValue = target.path("configuration/recipes/createOrReplace")
       .accept(MediaType.APPLICATION_JSON_TYPE)
-        .entity(Entity.entity(createRecipeJsonString, MediaType.APPLICATION_JSON_TYPE))
-        .put(String.class);
+        .put(String.class, createRecipeJsonString);
     log.debug("recipes().create() return: " + returnValue);
   }
 
@@ -284,8 +284,8 @@ public class ControlApiLib {
 
     final Response response =
         target.path("control/jobs/start").accept(MediaType.APPLICATION_JSON_TYPE)
-            .entity(Entity.entity(createJobJsonString, MediaType.APPLICATION_JSON_TYPE))
-            .post(Response.class );
+              .type(MediaType.APPLICATION_JSON_TYPE)
+              .post(Response.class, createJobJsonString );
     if (response.getStatus()!= 200 || response.getStatus() != 201 ) {
       throw new ItemSenseClientException(
           "Failed to start the job with status code " + response.getStatus() + " and response "
@@ -343,8 +343,8 @@ public class ControlApiLib {
     final String response =
         target.path("configuration/zoneMaps/create")
                 .accept(MediaType.APPLICATION_JSON_TYPE)
-                .entity(Entity.entity(zoneDataString, MediaType.APPLICATION_JSON_TYPE))
-                .post( String.class);
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .post( String.class, zoneDataString);
     log.debug("Response from createZoneMap: " + response);
     return response;
   }
@@ -365,8 +365,8 @@ public class ControlApiLib {
     log.debug("JSON being used to create reader definition: " + zoneMapString);
     final String returnValue = target.path("configuration/zoneMaps/createOrReplace")
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .entity(Entity.entity(zoneMapString, MediaType.APPLICATION_JSON_TYPE))
-        .put(String.class);
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .put(String.class, zoneMapString);
     log.debug("Zone Map creation returned: " + returnValue);
   }
 
@@ -377,7 +377,7 @@ public class ControlApiLib {
    */
   public String selectZoneMap(final String zoneMapName) {
     final String response = target.path("control/currentZoneMap/select/" + zoneMapName)
-        .accept(MediaType.APPLICATION_JSON_TYPE).entity(Entity.text("")).post( String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).post( String.class);
     log.debug("Response from selectZoneMapName: " + response);
     return response;
   }
@@ -439,8 +439,8 @@ public class ControlApiLib {
 
     final Response response = target.path("data/messageQueues/zoneTransition/configure")
         .accept(MediaType.APPLICATION_JSON_TYPE)
-        .entity(Entity.entity(filterString, MediaType.APPLICATION_JSON_TYPE))
-        .post(Response.class);
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .post(Response.class, filterString);
 
     if (response.getStatus() != 200 || response.getStatus() != 201) {
       throw new ItemSenseClientException(
