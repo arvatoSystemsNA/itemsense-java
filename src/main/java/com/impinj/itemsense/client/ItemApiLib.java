@@ -10,19 +10,19 @@
 package com.impinj.itemsense.client;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 
 import com.google.gson.Gson;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 
 
 /**
@@ -34,7 +34,7 @@ public class ItemApiLib {
 
   private final Gson gson;
   public static final int MAXIMUM_PAGE_SIZE = 1000;
-  private final WebTarget target;
+  private final WebResource target;
 
   /**
    * Constructor
@@ -45,7 +45,7 @@ public class ItemApiLib {
    */
   public ItemApiLib(final Gson gson, final Client client, final URI uri) {
     this.gson = gson;
-    target = client.target(uri);
+    target = client.resource(uri);
   }
 
   /**
@@ -99,10 +99,28 @@ public class ItemApiLib {
     log.debug("Sending /items/show request, epcPrefix=" + epcPrefix + ", zoneNames=" + zoneNames
         + ", confidence=" + confidence + ", epcFormat=" + epcFormat + ", pageMarker=" + pageMarker
         + ", maximumPageSize=" + maximumPageSize);
-    final String response = target.path("data/items/show").queryParam("epcPrefix", epcPrefix)
-        .queryParam("zoneNames", zoneNames).queryParam("confidence", confidence)
-        .queryParam("pageMarker", pageMarker).queryParam("epcFormat", epcFormat)
-        .queryParam("maximumPageSize", maximumPageSize).request(MediaType.APPLICATION_JSON_TYPE)
+    MultivaluedMap<String, String> map = new MultivaluedHashMap<String, String>();
+    if( epcPrefix != null ){
+      map.put("epcPrefix", Arrays.asList(epcPrefix));
+    }
+    if( zoneNames != null ){
+      map.put("zoneNames", Arrays.asList(zoneNames));
+    }
+    if( confidence != null ){
+      map.put("confidence", Arrays.asList(confidence));
+    }
+    if( epcFormat != null ){
+      map.put("epcFormat", Arrays.asList(epcFormat));
+    }
+    if( pageMarker != null ){
+      map.put("pageMarker", Arrays.asList(pageMarker));
+    }
+    if(maximumPageSize != null){
+      map.put("maximumPageSize", Arrays.asList(maximumPageSize.toString()));
+    }
+
+
+    final String response = target.path("data/items/show").queryParams(map).accept(MediaType.APPLICATION_JSON_TYPE)
         .get(String.class);
     log.trace("/items/show response: " + response);
     return gson.fromJson(response, Map.class);
@@ -132,11 +150,30 @@ public class ItemApiLib {
         "Sending /items/show/history request, epcPrefix=%s, fromZone=%s, "
             + "toZone=%s, fromTime=%s, toTime=%s, pageMarker=%s, maximumPageSize=%s",
         epcPrefix, fromZone, toZone, fromTime, toTime, pageMarker, maximumPageSize));
-    final String response = target.path("items/show/history").queryParam("epcPrefix", epcPrefix)
-        .queryParam("fromZone", fromZone).queryParam("toZone", toZone)
-        .queryParam("fromTime", fromTime).queryParam("toTime", toTime)
-        .queryParam("maximumPageSize", maximumPageSize).request(MediaType.APPLICATION_JSON_TYPE)
-        .get(String.class);
+    MultivaluedMap<String, String> map = new MultivaluedHashMap<String, String>();
+    if( epcPrefix != null ){
+      map.put("epcPrefix", Arrays.asList(epcPrefix));
+    }
+    if( fromZone != null ){
+      map.put("fromZone", Arrays.asList(fromZone));
+    }
+    if( toZone != null ){
+      map.put("toZone", Arrays.asList(toZone));
+    }
+    if( fromTime != null ){
+      map.put("fromTime", Arrays.asList(fromTime));
+    }
+    if( toTime != null ){
+      map.put("toTime", Arrays.asList(toTime));
+    }
+
+    if( pageMarker != null ){
+      map.put("pageMarker", Arrays.asList(pageMarker));
+    }
+    if(maximumPageSize != null){
+      map.put("maximumPageSize", Arrays.asList(maximumPageSize.toString()));
+    }
+    final String response = target.path("items/show/history").queryParams(map).get(String.class);
 
     log.trace("/items/show/history response: " + response);
     final Map result = gson.fromJson(response, Map.class);

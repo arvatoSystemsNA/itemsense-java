@@ -21,25 +21,25 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
 import lombok.extern.log4j.Log4j;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 
 @Log4j
 public class ControlApiLib {
 
   private final Gson gson;
-  private final WebTarget target;
+  private final WebResource target;
 
   /**
    * Constructor
@@ -48,7 +48,7 @@ public class ControlApiLib {
    */
   public ControlApiLib(final Gson gson, final Client client, final URI uri) {
     this.gson = gson;
-    target = client.target(uri);
+    target = client.resource(uri);
   }
 
   /**
@@ -77,7 +77,7 @@ public class ControlApiLib {
   public void stopJobById(final String jobId) throws Exception {
     log.debug("Attempting to destroy this job :" + jobId);
     final String response = target.path("control/jobs/stop/" + jobId)
-        .request(MediaType.APPLICATION_JSON_TYPE).post(Entity.text(""), String.class);
+        .entity(MediaType.APPLICATION_JSON_TYPE).post( String.class);
     log.debug("/control/jobs/stop response: " + response);
   }
 
@@ -127,9 +127,8 @@ public class ControlApiLib {
     final String createReaderDefJsonString = gson.toJson(readerDefData);
     log.debug("JSON being used to create reader definition: " + createReaderDefJsonString);
     final String returnValue = target.path("configuration/readerDefinitions/createOrReplace")
-        .request(MediaType.APPLICATION_JSON_TYPE)
-        .put(Entity.entity(createReaderDefJsonString, MediaType.APPLICATION_JSON_TYPE),
-            String.class);
+        .entity(Entity.entity(createReaderDefJsonString, MediaType.APPLICATION_JSON_TYPE))
+        .put( String.class);
     log.debug("ReaderDefinitions.create() return: " + returnValue);
   }
 
@@ -141,11 +140,13 @@ public class ControlApiLib {
    */
   public void destroyReaderDefinition(final String readerId) throws Exception {
     log.debug("About to destroy reader definition: " + readerId);
-    final String response = target.path("configuration/readerDefinitions/destroy/" + readerId)
-        .request(MediaType.APPLICATION_JSON_TYPE).delete(String.class);
-    log.debug("Destroy reader definition response: " + response);
-  }
 
+    final String response = target.path("control/readerDefinitions/destroy/" + readerId)
+            .entity(MediaType.APPLICATION_JSON_TYPE).post(String.class);
+
+    log.debug("Destroy reader definition response: " + response);
+
+  }
   /**
    * Returns a single reader address, if found.
    *
@@ -156,7 +157,7 @@ public class ControlApiLib {
   public String showReaderDefinition(final String readerId) throws Exception {
     log.debug("About to show reader definition: " + readerId);
     final String returnValue = target.path("configuration/readerDefinitions/show/" + readerId)
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("readerDefinitions.show() return: " + returnValue);
     return gson.fromJson(returnValue, Map.class).get("address").toString();
   }
@@ -170,7 +171,7 @@ public class ControlApiLib {
   public Collection<String> showAllReaderDefinitions() throws Exception {
     log.debug("About to show all reader definitions.");
     final String response = target.path("configuration/readerDefinitions/show")
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("readerDefinitions.show() return: " + response);
     final Collection<Map<?, ?>> readerDefinitions =
         gson.fromJson(response, new TypeToken<Collection<Map<?, ?>>>() {}.getType());
@@ -189,9 +190,9 @@ public class ControlApiLib {
     log.debug("JSON being used to create reader configuration: " + createConfigurationJsonString);
 
     final String returnValue = target.path("configuration/readerConfigurations/createOrReplace")
-        .request(MediaType.APPLICATION_JSON_TYPE)
-        .put(Entity.entity(createConfigurationJsonString, MediaType.APPLICATION_JSON_TYPE),
-            String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .entity(Entity.entity(createConfigurationJsonString, MediaType.APPLICATION_JSON_TYPE))
+        .put(String.class);
     log.debug("readerConfigurations().create() return: " + returnValue);
     return returnValue;
   }
@@ -205,7 +206,7 @@ public class ControlApiLib {
   public void destroyConfiguration(final String configName) throws Exception {
     log.debug("About to destroy reader configuration: " + configName);
     final String response = target.path("configuration/readerConfigurations/destroy/" + configName)
-        .request(MediaType.APPLICATION_JSON_TYPE).delete(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).delete(String.class);
     log.debug("Destroy reader configuration response: " + response);
   }
 
@@ -245,22 +246,23 @@ public class ControlApiLib {
     log.debug("JSON being used to create recipe: " + createRecipeJsonString);
 
     final String returnValue = target.path("configuration/recipes/createOrReplace")
-        .request(MediaType.APPLICATION_JSON_TYPE)
-        .put(Entity.entity(createRecipeJsonString, MediaType.APPLICATION_JSON_TYPE), String.class);
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+        .entity(Entity.entity(createRecipeJsonString, MediaType.APPLICATION_JSON_TYPE))
+        .put(String.class);
     log.debug("recipes().create() return: " + returnValue);
   }
 
   public void destroyRecipe(final String recipeName) {
     log.debug("About to destroy recipe: " + recipeName);
     final String response = target.path("configuration/recipes/destroy/" + recipeName)
-        .request(MediaType.APPLICATION_JSON_TYPE).delete(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).delete(String.class);
     log.debug("Destroy recipe response: " + response);
   }
 
   public String showRecipe(final String recipeName) throws Exception {
     log.debug("About to show recipe: " + recipeName);
     final String returnValue = target.path("configuration/recipes/show/" + recipeName)
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("recipes.show() return: " + returnValue);
     return gson.fromJson(returnValue, Map.class).get("name").toString();
   }
@@ -268,7 +270,7 @@ public class ControlApiLib {
   public Collection<String> showAllRecipes() throws Exception {
     log.debug("About to show all recipes.");
     final String returnValue = target.path("configuration/recipes/show")
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("recipes.show() return: " + returnValue);
     final Collection<Map<String, Object>> resultSet =
         gson.fromJson(returnValue, new TypeToken<Collection<Map<String, Object>>>() {}.getType());
@@ -281,14 +283,15 @@ public class ControlApiLib {
     log.debug("JSON being used to create jobs: " + createJobJsonString);
 
     final Response response =
-        target.path("control/jobs/start").request(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.entity(createJobJsonString, MediaType.APPLICATION_JSON_TYPE));
-    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+        target.path("control/jobs/start").accept(MediaType.APPLICATION_JSON_TYPE)
+            .entity(Entity.entity(createJobJsonString, MediaType.APPLICATION_JSON_TYPE))
+            .post(Response.class );
+    if (response.getStatus()!= 200 || response.getStatus() != 201 ) {
       throw new ItemSenseClientException(
-          "Failed to start the job with status code " + response.getStatusInfo() + " and response "
-              + response.readEntity(FailureResponse.class));
+          "Failed to start the job with status code " + response.getStatus() + " and response "
+              + (FailureResponse)response.getEntity());
     }
-    final String returnValue = response.readEntity(String.class);
+    final String returnValue = (String) response.getEntity();
     log.debug("jobs().create() return: " + returnValue);
 
     return gson.fromJson(returnValue, JobsResponse.class);
@@ -305,7 +308,7 @@ public class ControlApiLib {
    */
   public Collection<JobsResponse> showJobs() throws IOException {
     final String response =
-        target.path("control/jobs/show").request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        target.path("control/jobs/show").accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("/jobs/show response: " + response);
     return gson.fromJson(response, new TypeToken<Collection<JobsResponse>>() {}.getType());
   }
@@ -313,7 +316,7 @@ public class ControlApiLib {
   public JobsResponse showJobId(final String jobId) throws IOException {
     log.debug("About to show job");
     final String response = target.path("control/jobs/show/" + jobId)
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("/jobs/show/{jobId} response: " + response);
     return gson.fromJson(response, JobsResponse.class);
   }
@@ -338,8 +341,10 @@ public class ControlApiLib {
 
     // Use the wadl2java created code to make the call
     final String response =
-        target.path("configuration/zoneMaps/create").request(MediaType.APPLICATION_JSON_TYPE)
-            .post(Entity.entity(zoneDataString, MediaType.APPLICATION_JSON_TYPE), String.class);
+        target.path("configuration/zoneMaps/create")
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .entity(Entity.entity(zoneDataString, MediaType.APPLICATION_JSON_TYPE))
+                .post( String.class);
     log.debug("Response from createZoneMap: " + response);
     return response;
   }
@@ -359,8 +364,9 @@ public class ControlApiLib {
     final String zoneMapString = gson.toJson(zoneMap);
     log.debug("JSON being used to create reader definition: " + zoneMapString);
     final String returnValue = target.path("configuration/zoneMaps/createOrReplace")
-        .request(MediaType.APPLICATION_JSON_TYPE)
-        .put(Entity.entity(zoneMapString, MediaType.APPLICATION_JSON_TYPE), String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .entity(Entity.entity(zoneMapString, MediaType.APPLICATION_JSON_TYPE))
+        .put(String.class);
     log.debug("Zone Map creation returned: " + returnValue);
   }
 
@@ -371,7 +377,7 @@ public class ControlApiLib {
    */
   public String selectZoneMap(final String zoneMapName) {
     final String response = target.path("control/currentZoneMap/select/" + zoneMapName)
-        .request(MediaType.APPLICATION_JSON_TYPE).post(Entity.text(""), String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).entity(Entity.text("")).post( String.class);
     log.debug("Response from selectZoneMapName: " + response);
     return response;
   }
@@ -381,7 +387,7 @@ public class ControlApiLib {
    */
   public String showZoneMap(final String zoneMapName) throws IOException {
     final String returnValue = target.path("configuration/zoneMaps/show/" + zoneMapName)
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("Zone Map Show returned: " + returnValue);
     return gson.fromJson(returnValue, Map.class).get("name").toString();
   }
@@ -389,7 +395,7 @@ public class ControlApiLib {
   public Collection<String> showAllZoneMaps() throws Exception {
     log.debug("About to show all zone maps.");
     final String returnValue = target.path("configuration/zoneMaps/show")
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("zoneMaps.show() return: " + returnValue);
     final Collection<Map<?, ?>> resultSet =
         gson.fromJson(returnValue, new TypeToken<Collection<Map<?, ?>>>() {}.getType());
@@ -402,7 +408,7 @@ public class ControlApiLib {
   public String showCurrentZoneMap() {
     log.debug("About to show current zone map");
     final String response = target.path("control/currentZoneMap/show")
-        .request(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
     log.debug("Show current zone map response: " + response);
     return response;
   }
@@ -415,7 +421,7 @@ public class ControlApiLib {
   public void destroyZoneMap(final String zoneMapName) {
     log.debug("About to destroy zone map");
     final String response = target.path("configuration/zoneMaps/destroy/" + zoneMapName)
-        .request(MediaType.APPLICATION_JSON_TYPE).delete(String.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).delete(String.class);
     log.debug("Destroy zone map response: " + response);
   }
 
@@ -432,17 +438,18 @@ public class ControlApiLib {
     log.debug(String.format("About to configure zoneTransition message queue: %s", filterString));
 
     final Response response = target.path("data/messageQueues/zoneTransition/configure")
-        .request(MediaType.APPLICATION_JSON_TYPE)
-        .post(Entity.entity(filterString, MediaType.APPLICATION_JSON_TYPE));
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .entity(Entity.entity(filterString, MediaType.APPLICATION_JSON_TYPE))
+        .post(Response.class);
 
-    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+    if (response.getStatus() != 200 || response.getStatus() != 201) {
       throw new ItemSenseClientException(
           "Failed configure the zoneTransition message queue with status code "
-              + response.getStatusInfo() + " and response "
-              + response.readEntity(FailureResponse.class));
+              + response.getStatus() + " and response "
+              + (FailureResponse) response.getEntity());
     }
 
-    final String returnValue = response.readEntity(String.class);
+    final String returnValue = (String) response.getEntity();
     log.debug("zoneTransition configure return: " + returnValue);
 
     return gson.fromJson(returnValue, QueueConfiguration.class);

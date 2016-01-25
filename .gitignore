@@ -22,6 +22,6 @@ out/
 .idea/libraries/Maven__com_fasterxml_jackson_datatype_jackson_datatype_jsr310_2_5_1.xml
 .idea/vcs.xml
 
-
+.idea/
 target.zip
 Target/
