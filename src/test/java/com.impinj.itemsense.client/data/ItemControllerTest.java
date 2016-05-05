@@ -47,7 +47,7 @@ public class ItemControllerTest {
         itemController = dataApiController.getItemController();
         gson = new GsonBuilder().registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeSerialization()).create();
         Item item = gson.fromJson("{\"epc\":\"30140008782B0AC000000001\",\"tagId\":\"000000000000\",\"xLocation\":-0.4,\"yLocation\":-0.3,\"zLocation\":0,\"zone\":\"Bryan_Office\",\"facility\":null,\"presenceConfidence\":\"HIGH\",\"lastModifiedTime\":\"2016-02-01T19:53:39Z\"}", Item.class);
-        itemResponseTest = new ItemResponse(new Item[]{item}, null);
+        itemResponseTest = new ItemResponse(new Item[]{item}, null, null);
 
     }
 

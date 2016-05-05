@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import com.impinj.itemsense.client.helpers.RestApiHelper;
 import com.impinj.itemsense.client.data.EpcFormat;
 import com.impinj.itemsense.client.data.PresenceConfidence;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 import java.util.*;
 
 /**
@@ -15,12 +18,12 @@ import java.util.*;
 public class ItemController {
     private Gson gson;
     private WebTarget target;
-    private RestApiHelper<ItemResponse> restApiHelper;
+    private RestApiHelper<Response> restApiHelper;
 
     public ItemController(final Gson gson, WebTarget target) {
         this.gson = gson;
         this.target = target;
-        this.restApiHelper = new RestApiHelper<ItemResponse>(ItemResponse.class);
+    	this.restApiHelper = new RestApiHelper<>(Response.class);
     }
 
     public ItemResponse getItems(EpcFormat epcFormat, String epcPrefix, String zoneNames, PresenceConfidence presenceConfidence, String facility,
@@ -52,8 +55,15 @@ public class ItemController {
 
     }
 
-    public ItemResponse getItems(HashMap<String, Object> queryParams) {
-        return this.restApiHelper.get(queryParams, "/data/v1/items/show", target, gson);
+    public ItemResponse getItems(final HashMap<String, Object> queryParams) {
+		final Response response = this.restApiHelper.get(queryParams, "/data/v1/items/show", target, gson);
+		final ItemResponse itemResponse = response.readEntity(ItemResponse.class);
+		if (response.getHeaderString("date") != null)
+		{
+			final ZonedDateTime time = ZonedDateTime.parse(response.getHeaderString("date"), DateTimeFormatter.RFC_1123_DATE_TIME);
+			itemResponse.setTime(time);
+		}
+		return itemResponse;
     }
 
     public ItemResponse getItems() {
