@@ -24,6 +24,14 @@ out/
 .idea/libraries/Maven__com_fasterxml_jackson_datatype_jackson_datatype_jsr310_2_5_1.xml
 .idea/vcs.xml
 
+# eclipse generated files
+RemoteSystemsTempFiles/
+.metadata
+.classpath
+.project
+.settings
+/bin/
 
 target.zip
 Target/
+/target/
